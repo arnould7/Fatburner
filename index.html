@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FatBurner">
+<meta name="theme-color" content="#080808">
+<title>FatBurner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#080808;--surface:#111;--card:#161616;--border:#252525;
+  --accent:#ff4500;--accent2:#ff8c00;--green:#00e676;--blue:#00b4ff;
+  --purple:#b388ff;--text:#f0f0f0;--muted:#555;--muted2:#888;
+  --display:'Bebas Neue',sans-serif;--body:'DM Sans',sans-serif;--radius:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overscroll-behavior:none;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);padding-bottom:90px;}
+
+.header{position:sticky;top:0;z-index:50;background:rgba(8,8,8,0.93);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);padding:14px 18px 10px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.logo{font-family:var(--display);font-size:26px;letter-spacing:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.streak-badge{display:flex;align-items:center;gap:4px;background:rgba(255,69,0,0.12);border:1px solid rgba(255,69,0,0.25);border-radius:20px;padding:4px 10px;font-size:12px;font-weight:600;color:var(--accent2);}
+.date-txt{font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+
+.main{padding:16px 14px;display:flex;flex-direction:column;gap:14px;}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border-radius:12px;padding:3px;gap:2px;}
+.tab{padding:9px 4px;border-radius:9px;font-size:10px;font-weight:600;text-align:center;cursor:pointer;color:var(--muted);transition:all 0.2s;}
+.tab.active{background:var(--card);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,0.5);}
+
+.view{display:none;flex-direction:column;gap:12px;}
+.view.active{display:flex;}
+
+.card{background:var(--card);border-radius:var(--radius);padding:18px;border:1px solid var(--border);}
+.card-title{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;}
+
+.big-num{font-family:var(--display);font-size:64px;letter-spacing:2px;line-height:1;text-align:center;}
+.big-label{text-align:center;font-size:11px;color:var(--muted2);margin-top:4px;letter-spacing:1px;}
+
+.bal-grid{display:grid;grid-template-columns:1fr 1px 1fr;gap:0;margin-top:18px;}
+.bal-item{text-align:center;}
+.bal-divider{background:var(--border);}
+.bal-val{font-family:var(--display);font-size:28px;letter-spacing:1px;}
+.bal-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+
+.fat-row{display:flex;align-items:flex-end;gap:8px;justify-content:center;margin:6px 0;}
+.fat-big{font-family:var(--display);font-size:52px;line-height:1;letter-spacing:1px;}
+.fat-unit{font-size:14px;color:var(--muted2);margin-bottom:8px;}
+.fat-sub{font-size:11px;color:var(--muted2);text-align:center;line-height:1.6;margin-top:6px;}
+
+/* INPUT — type text, inputmode=decimal pour clavier numérique iOS avec virgule */
+.inp-wrap{display:flex;flex-direction:column;background:var(--surface);border-radius:12px;border:1px solid var(--border);transition:border-color 0.2s;overflow:hidden;}
+.inp-wrap:focus-within{border-color:var(--accent);}
+.inp-top{display:flex;align-items:center;padding:13px 14px;gap:10px;}
+.inp-icon{font-size:20px;flex-shrink:0;}
+.inp-inner{flex:1;}
+.inp-lbl{font-size:9px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.inp-field{width:100%;background:none;border:none;outline:none;font-family:var(--body);font-size:18px;font-weight:500;color:var(--text);}
+.inp-field::placeholder{color:var(--border);}
+.inp-unit{font-size:11px;color:var(--muted);font-weight:500;flex-shrink:0;}
+.calc-bar{padding:6px 14px 8px 44px;font-size:12px;color:var(--accent2);font-weight:600;display:none;border-top:1px solid var(--border);background:rgba(255,140,0,0.05);}
+.calc-bar.show{display:block;}
+.inp-hint{font-size:10px;color:var(--muted);padding:0 4px;line-height:1.7;}
+.inp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+
+.btn{width:100%;padding:15px;border-radius:12px;border:none;font-family:var(--display);font-size:18px;letter-spacing:2px;cursor:pointer;transition:all 0.2s;background:linear-gradient(135deg,var(--accent),var(--accent2));color:white;}
+.btn:active{transform:scale(0.97);opacity:0.88;}
+.btn-ghost{background:var(--surface);color:var(--muted2);border:1px solid var(--border);font-size:13px;letter-spacing:1px;padding:12px;font-family:var(--body);font-weight:600;}
+.btn-blue{background:linear-gradient(135deg,#0080ff,var(--blue));}
+.btn-green{background:linear-gradient(135deg,#00c853,var(--green));color:#000;}
+.btn-sm{padding:10px 16px;font-size:14px;width:auto;letter-spacing:1px;}
+
+.mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+.mini-stat{background:var(--surface);border-radius:12px;padding:12px 8px;text-align:center;border:1px solid var(--border);}
+.mini-val{font-family:var(--display);font-size:20px;letter-spacing:1px;}
+.mini-lbl{font-size:9px;color:var(--muted);letter-spacing:0.8px;text-transform:uppercase;margin-top:2px;}
+
+.water-circles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:8px 0;}
+.water-drop{width:44px;height:44px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all 0.2s;background:var(--surface);}
+.water-drop.filled{background:rgba(0,180,255,0.15);border-color:var(--blue);}
+.water-drop:active{transform:scale(0.9);}
+
+.body-comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px;}
+.body-comp-item{background:var(--surface);border-radius:10px;padding:12px;border:1px solid var(--border);text-align:center;}
+.body-comp-val{font-family:var(--display);font-size:22px;}
+.body-comp-lbl{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px;}
+
+.result-box{background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.2);border-radius:12px;padding:14px;font-size:12px;color:var(--text);line-height:2;}
+.result-box.orange{background:rgba(255,140,0,0.07);border-color:rgba(255,140,0,0.2);}
+.result-box strong{color:var(--green);}
+.result-box.orange strong{color:var(--accent2);}
+
+.hist-item{display:flex;align-items:center;padding:13px 0;border-bottom:1px solid var(--border);gap:10px;cursor:pointer;}
+.hist-item:last-child{border-bottom:none;}
+.hist-item:active{opacity:0.7;}
+.hist-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.hist-val{font-family:var(--display);font-size:16px;}
+.edit-badge{font-size:9px;background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 5px;color:var(--muted);}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px);}
+.modal{background:var(--card);border-radius:20px 20px 0 0;padding:24px 20px 44px;width:100%;max-width:500px;border-top:1px solid var(--border);}
+.modal-title{font-family:var(--display);font-size:22px;letter-spacing:2px;margin-bottom:4px;}
+.modal-date{font-size:11px;color:var(--muted2);margin-bottom:20px;}
+.modal-actions{display:flex;gap:8px;margin-top:14px;}
+
+.alert{padding:11px 14px;border-radius:10px;font-size:12px;font-weight:500;line-height:1.5;display:none;}
+.alert.show{display:block;}
+.alert.green{background:rgba(0,230,118,0.08);color:var(--green);border:1px solid rgba(0,230,118,0.2);}
+.alert.orange{background:rgba(255,69,0,0.08);color:var(--accent2);border:1px solid rgba(255,69,0,0.2);}
+
+.prog-wrap{margin-top:14px;}
+.prog-bg{height:5px;background:var(--surface);border-radius:100px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:100px;transition:width 0.5s cubic-bezier(.34,1.56,.64,1);}
+.prog-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:5px;}
+
+.weight-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);}
+.weight-item:last-child{border-bottom:none;}
+.section-gap{display:flex;flex-direction:column;gap:8px;}
+.empty{text-align:center;padding:24px 0;color:var(--muted);font-size:12px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">FATBURNER 🔥</div>
+  <div class="header-right">
+    <div class="streak-badge">🔥 <span id="streakCount">0</span>j</div>
+    <div class="date-txt" id="dateDisplay"></div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('today')">📊 Jour</div>
+    <div class="tab" onclick="switchTab('body')">💪 Body</div>
+    <div class="tab" onclick="switchTab('goal')">🎯 Objectif</div>
+    <div class="tab" onclick="switchTab('history')">📅 Historique</div>
+  </div>
+
+  <!-- TODAY -->
+  <div class="view active" id="view-today">
+    <div class="card">
+      <div class="card-title">Bilan du jour</div>
+      <div class="big-num" id="balanceDisplay" style="color:var(--muted)">0</div>
+      <div class="big-label" id="balanceLabel">KCAL</div>
+      <div class="bal-grid">
+        <div class="bal-item">
+          <div class="bal-val" style="color:var(--accent)" id="consumedDisplay">0</div>
+          <div class="bal-lbl">🍽 MANGÉ</div>
+        </div>
+        <div class="bal-divider"></div>
+        <div class="bal-item">
+          <div class="bal-val" style="color:var(--green)" id="burnedDisplay">0</div>
+          <div class="bal-lbl">🔥 BRÛLÉ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Gras fondu aujourd'hui</div>
+      <div class="fat-row">
+        <div class="fat-big" id="fatTodayKg" style="color:var(--green)">0.000</div>
+        <div class="fat-unit">kg</div>
+      </div>
+      <div class="fat-sub" id="fatTodayInfo">Entre tes calories pour voir le résultat</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Hydratation 💧</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <span style="font-size:13px;color:var(--muted2)"><span id="waterCount">0</span> / <span id="waterGoal">8</span> verres</span>
+        <span style="font-family:var(--display);font-size:18px;color:var(--blue)" id="waterMl">0 ml</span>
+      </div>
+      <div class="water-circles" id="waterDrops"></div>
+      <div class="prog-wrap" style="margin-top:8px;">
+        <div class="prog-bg"><div class="prog-fill" id="waterBar" style="background:linear-gradient(90deg,#0080ff,var(--blue));width:0%"></div></div>
+      </div>
+    </div>
+
+    <div class="alert" id="alertMsg"></div>
+
+    <div class="card">
+      <div class="card-title">Saisir calories</div>
+      <div class="section-gap">
+        <div class="inp-wrap" id="grp-consumed">
+          <div class="inp-top">
+            <div class="inp-icon">🍕</div>
+            <div class="inp-inner">
+              <div class="inp-lbl">Calories mangées</div>
+              <input class="inp-field" id="inputConsumed" type="text" inputmode="decimal" placeholder="ex: 350+120+200" oninput="onCalcInput(this,'calcConsumed')">
+            </div>
+            <div class="inp-unit">kcal</div>
+          </div>
+          <div class="calc-bar" id="calcConsumed"></div>
+        </div>
+        <div class="inp-wrap" id="grp-burned">
+          <div class="inp-top">
+            <div class="inp-icon">🔥</div>
+            <div class="inp-inner">
+              <div class="inp-lbl">Calories brûlées (total journée)</div>
+              <input class="inp-field" id="inputBurned" type="text" inputmode="decimal" placeholder="ex: 2000+350" oninput="onCalcInput(this,'calcBurned')">
+            </div>
+            <div class="inp-unit">kcal</div>
+          </div>
+          <div class="calc-bar" id="calcBurned"></div>
+        </div>
+        <div class="inp-hint">💡 Tape <strong>350+120+80</strong> → calcul automatique avant d'enregistrer</div>
+        <button class="btn" onclick="saveToday()">ENREGISTRER</button>
+        <button class="btn btn-ghost" onclick="resetToday()">Réinitialiser le jour</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BODY -->
+  <div class="view" id="view-body">
+    <div class="card">
+      <div class="card-title">Données Withings / Balance</div>
+      <div class="section-gap">
+        <div class="inp-grid">
+          <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">Poids</div><input class="inp-field" id="bWeight" type="text" inputmode="decimal" placeholder="82"></div><div class="inp-unit">kg</div></div></div>
+          <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">% Bodyfat</div><input class="inp-field" id="bBodyfat" type="text" inputmode="decimal" placeholder="22"></div><div class="inp-unit">%</div></div></div>
+          <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">% Muscle</div><input class="inp-field" id="bMuscle" type="text" inputmode="decimal" placeholder="38"></div><div class="inp-unit">%</div></div></div>
+          <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">% Eau</div><input class="inp-field" id="bWater" type="text" inputmode="decimal" placeholder="55"></div><div class="inp-unit">%</div></div></div>
+        </div>
+        <button class="btn btn-blue" onclick="saveBodyComp()">ENREGISTRER MESURE</button>
+      </div>
+    </div>
+    <div class="card" id="bodyCompResult" style="display:none;">
+      <div class="card-title">Composition actuelle</div>
+      <div class="body-comp-grid" id="bodyCompGrid"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Objectif % Bodyfat</div>
+      <div class="section-gap">
+        <div class="inp-wrap"><div class="inp-top"><div class="inp-icon">🎯</div><div class="inp-inner"><div class="inp-lbl">Bodyfat cible</div><input class="inp-field" id="bTargetBf" type="text" inputmode="decimal" placeholder="15"></div><div class="inp-unit">%</div></div></div>
+        <button class="btn btn-green" onclick="calcBodyfatGoal()">CALCULER</button>
+      </div>
+    </div>
+    <div id="bfGoalResult" style="display:none;" class="card">
+      <div class="card-title">Résultat du calcul</div>
+      <div id="bfGoalContent"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Historique des mesures</div>
+      <div id="weightHistory"><div class="empty">Aucune mesure encore</div></div>
+    </div>
+  </div>
+
+  <!-- GOAL -->
+  <div class="view" id="view-goal">
+    <div class="card">
+      <div class="card-title">Progression cumulative</div>
+      <div class="fat-row">
+        <div class="fat-big" id="totalFatLost" style="color:var(--green)">0.000</div>
+        <div class="fat-unit">kg</div>
+      </div>
+      <div class="fat-sub" id="goalProgress">Aucune donnée</div>
+      <div class="prog-wrap">
+        <div class="prog-bg" style="height:8px;"><div class="prog-fill" id="goalProgressBar" style="background:linear-gradient(90deg,var(--green),var(--blue));width:0%;height:100%"></div></div>
+        <div class="prog-labels"><span>0</span><span id="goalTarget">Objectif : — kg</span></div>
+      </div>
+    </div>
+    <div class="mini-stats">
+      <div class="mini-stat"><div class="mini-val" id="statDays" style="color:var(--accent2)">0</div><div class="mini-lbl">Jours actifs</div></div>
+      <div class="mini-stat"><div class="mini-val" id="statDeficit" style="color:var(--purple)">0k</div><div class="mini-lbl">Déficit net</div></div>
+      <div class="mini-stat"><div class="mini-val" id="statAvg" style="color:var(--green)">0</div><div class="mini-lbl">Moy/jour</div></div>
+    </div>
+    <div class="card" id="estimateCard" style="display:none;">
+      <div class="card-title">Estimation</div>
+      <div id="estimateContent"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Paramètres</div>
+      <div class="section-gap">
+        <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">Objectif perte de gras</div><input class="inp-field" id="inputGoalKg" type="text" inputmode="decimal" placeholder="5"></div><div class="inp-unit">kg</div></div></div>
+        <div class="inp-wrap"><div class="inp-top"><div class="inp-inner"><div class="inp-lbl">Objectif eau / jour</div><input class="inp-field" id="inputWaterGoal" type="text" inputmode="decimal" placeholder="8"></div><div class="inp-unit">verres</div></div></div>
+        <button class="btn" onclick="saveGoal()">SAUVEGARDER</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="view" id="view-history">
+    <div class="card">
+      <div class="card-title">Historique complet <span id="histCount" style="color:var(--muted2);font-size:10px;font-family:var(--body);font-weight:400;letter-spacing:0;text-transform:none"></span></div>
+      <div id="historyList"><div class="empty">Aucune entrée encore</div></div>
+    </div>
+    <button class="btn btn-ghost" onclick="if(confirm('Effacer tout l\'historique ?')){state.history=[];save();render();}">🗑 Effacer l'historique</button>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="editModal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title">MODIFIER</div>
+    <div class="modal-date" id="modalDate"></div>
+    <div class="section-gap">
+      <div class="inp-wrap">
+        <div class="inp-top">
+          <div class="inp-icon">🍕</div>
+          <div class="inp-inner">
+            <div class="inp-lbl">Calories mangées</div>
+            <input class="inp-field" id="modalConsumed" type="text" inputmode="decimal" placeholder="ex: 350+200" oninput="onCalcInput(this,'calcModalConsumed')">
+          </div>
+          <div class="inp-unit">kcal</div>
+        </div>
+        <div class="calc-bar" id="calcModalConsumed"></div>
+      </div>
+      <div class="inp-wrap">
+        <div class="inp-top">
+          <div class="inp-icon">🔥</div>
+          <div class="inp-inner">
+            <div class="inp-lbl">Calories brûlées</div>
+            <input class="inp-field" id="modalBurned" type="text" inputmode="decimal" placeholder="ex: 2000+350" oninput="onCalcInput(this,'calcModalBurned')">
+          </div>
+          <div class="inp-unit">kcal</div>
+        </div>
+        <div class="calc-bar" id="calcModalBurned"></div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" style="flex:1" onclick="saveModal()">SAUVEGARDER</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+let state = {
+  goal: { kg: 0, waterGoal: 8 },
+  today: { consumed: 0, burned: 0, water: 0, date: todayKey() },
+  history: [],
+  bodyMeasurements: [],
+  currentBody: null,
+  streak: 0,
+  lastActiveDate: ''
+};
+let editingIndex = -1;
+
+function todayKey() {
+  return new Date().toLocaleDateString('fr-FR', { year:'numeric', month:'2-digit', day:'2-digit' });
+}
+
+function load() {
+  try {
+    const s = localStorage.getItem('fb_v4');
+    if (s) {
+      const parsed = JSON.parse(s);
+      state = {
+        goal: { kg: 0, waterGoal: 8, ...parsed.goal },
+        today: { consumed: 0, burned: 0, water: 0, date: todayKey(), ...parsed.today },
+        history: parsed.history || [],
+        bodyMeasurements: parsed.bodyMeasurements || [],
+        currentBody: parsed.currentBody || null,
+        streak: parsed.streak || 0,
+        lastActiveDate: parsed.lastActiveDate || ''
+      };
+    }
+  } catch(e) { console.error('Load error', e); }
+
+  if (state.today.date !== todayKey()) {
+    if (state.today.consumed > 0 || state.today.burned > 0) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yKey = yesterday.toLocaleDateString('fr-FR', { year:'numeric', month:'2-digit', day:'2-digit' });
+      if (state.lastActiveDate === yKey) state.streak = (state.streak || 0) + 1;
+      else if (state.lastActiveDate !== todayKey()) state.streak = 1;
+      state.lastActiveDate = state.today.date;
+      state.history.unshift({ ...state.today });
+      if (state.history.length > 365) state.history = state.history.slice(0, 365);
+    }
+    state.today = { consumed: 0, burned: 0, water: 0, date: todayKey() };
+    save();
+  }
+}
+
+function save() {
+  try { localStorage.setItem('fb_v4', JSON.stringify(state)); } catch(e) { console.error('Save error', e); }
+}
+
+// ===== CALCULATRICE =====
+function evalExpr(str) {
+  if (!str) return 0;
+  const clean = str.toString().replace(/,/g, '.').replace(/[^0-9+\-.]/g, '');
+  if (!clean) return 0;
+  try {
+    const result = Function('"use strict"; return (' + clean + ')')();
+    return isFinite(result) && result >= 0 ? Math.round(result) : 0;
+  } catch { return 0; }
+}
+
+function onCalcInput(el, barId) {
+  const val = el.value;
+  const bar = document.getElementById(barId);
+  if (val && /[+\-]/.test(val)) {
+    const r = evalExpr(val);
+    bar.textContent = '= ' + r.toLocaleString('fr-FR') + ' kcal';
+    bar.className = 'calc-bar show';
+  } else {
+    bar.className = 'calc-bar';
+  }
+}
+
+function getVal(id) {
+  const val = document.getElementById(id).value;
+  return evalExpr(val);
+}
+
+// ===== CALCULS =====
+function deficitOf(entry) {
+  if (!entry || !entry.burned) return null;
+  return entry.burned - entry.consumed;
+}
+
+function kcalToKg(k) { return (k / 7700).toFixed(3); }
+
+function getTotalNetDeficit() {
+  let total = 0;
+  state.history.forEach(d => { if (d.burned) total += (d.burned - d.consumed); });
+  const td = deficitOf(state.today);
+  if (td !== null) total += td;
+  return total;
+}
+
+// ===== RENDER =====
+function render() {
+  // Header
+  document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' }).toUpperCase();
+  document.getElementById('streakCount').textContent = state.streak || 0;
+
+  // TODAY bilan
+  const consumed = state.today.consumed || 0;
+  const burned = state.today.burned || 0;
+  document.getElementById('consumedDisplay').textContent = consumed.toLocaleString('fr-FR');
+  document.getElementById('burnedDisplay').textContent = burned.toLocaleString('fr-FR');
+
+  // Inputs (ne pas écraser si focus)
+  const inC = document.getElementById('inputConsumed');
+  const inB = document.getElementById('inputBurned');
+  if (document.activeElement !== inC) inC.value = consumed || '';
+  if (document.activeElement !== inB) inB.value = burned || '';
+
+  const def = deficitOf(state.today);
+  const balEl = document.getElementById('balanceDisplay');
+  const lblEl = document.getElementById('balanceLabel');
+  if (def !== null) {
+    balEl.textContent = (def > 0 ? '+' : '') + def.toLocaleString('fr-FR');
+    balEl.style.color = def > 0 ? 'var(--green)' : def < 0 ? 'var(--accent)' : 'var(--muted)';
+    lblEl.textContent = def > 0 ? '✅ DÉFICIT KCAL' : def < 0 ? '⚠️ SURPLUS KCAL' : 'ÉQUILIBRE';
+  } else {
+    balEl.textContent = '0'; balEl.style.color = 'var(--muted)';
+    lblEl.textContent = 'ENTRE TES CALORIES BRÛLÉES';
+  }
+
+  // Gras today
+  const fatEl = document.getElementById('fatTodayKg');
+  const infoEl = document.getElementById('fatTodayInfo');
+  if (def !== null && def > 0) {
+    fatEl.textContent = kcalToKg(def);
+    fatEl.style.color = 'var(--green)';
+    infoEl.textContent = `${def.toLocaleString('fr-FR')} kcal de déficit — 1 kg de gras = 7 700 kcal`;
+  } else if (def !== null && def < 0) {
+    fatEl.textContent = kcalToKg(Math.abs(def));
+    fatEl.style.color = 'var(--accent)';
+    infoEl.textContent = `Surplus de ${Math.abs(def)} kcal — déduit de ta progression totale`;
+  } else if (def === 0) {
+    fatEl.textContent = '0.000'; fatEl.style.color = 'var(--muted2)';
+    infoEl.textContent = 'Équilibre parfait';
+  } else {
+    fatEl.textContent = '0.000'; fatEl.style.color = 'var(--green)';
+    infoEl.textContent = 'Entre tes calories brûlées pour voir le résultat';
+  }
+
+  // Alert
+  const al = document.getElementById('alertMsg');
+  if (def !== null) {
+    if (def >= 400 && def <= 1000) { al.className='alert show green'; al.textContent=`🎯 Déficit idéal ! ${def} kcal → ${kcalToKg(def)} kg fondu aujourd'hui.`; }
+    else if (def > 1000) { al.className='alert show orange'; al.textContent=`⚡ Déficit élevé (${def} kcal). Mange assez de protéines pour préserver le muscle.`; }
+    else if (def < 0) { al.className='alert show orange'; al.textContent=`🍕 Surplus de ${Math.abs(def)} kcal — sera déduit de ta perte totale.`; }
+    else al.className='alert';
+  } else al.className='alert';
+
+  // Water
+  renderWater();
+
+  // GOAL
+  const totalNet = getTotalNetDeficit();
+  const fatKgNet = totalNet / 7700;
+  const fatDisplay = fatKgNet.toFixed(3);
+  document.getElementById('totalFatLost').textContent = fatDisplay;
+  document.getElementById('totalFatLost').style.color = fatKgNet >= 0 ? 'var(--green)' : 'var(--accent)';
+
+  const allDaysWithData = state.history.filter(d => d.burned).length + (def !== null ? 1 : 0);
+  const defDays = state.history.filter(d => d.burned && (d.burned - d.consumed) > 0).length + (def !== null && def > 0 ? 1 : 0);
+  const avgDef = allDaysWithData > 0 ? Math.round(totalNet / allDaysWithData) : 0;
+
+  document.getElementById('statDays').textContent = allDaysWithData;
+  document.getElementById('statDeficit').textContent = (totalNet / 1000).toFixed(1) + 'k';
+  document.getElementById('statAvg').textContent = avgDef;
+
+  const goalKg = state.goal.kg || 0;
+  if (goalKg > 0) {
+    const rem = Math.max(0, goalKg - parseFloat(fatDisplay));
+    document.getElementById('goalProgress').textContent = `${fatDisplay} / ${goalKg} kg — reste ${rem.toFixed(2)} kg`;
+    document.getElementById('goalTarget').textContent = `Objectif : ${goalKg} kg`;
+    document.getElementById('goalProgressBar').style.width = Math.min(100, Math.max(0, (parseFloat(fatDisplay) / goalKg) * 100)) + '%';
+    if (avgDef > 0) {
+      const daysLeft = Math.ceil((rem * 7700) / avgDef);
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + daysLeft);
+      document.getElementById('estimateCard').style.display = '';
+      document.getElementById('estimateContent').innerHTML = `<div style="font-size:12px;color:var(--muted2);line-height:2.2;">
+        Déficit moyen net : <strong style="color:var(--text)">${avgDef} kcal/jour</strong><br>
+        📅 Jours restants : <strong style="color:var(--accent2)">${daysLeft}</strong><br>
+        🗓 Date estimée : <strong style="color:var(--accent2)">${targetDate.toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })}</strong>
+      </div>`;
+    } else { document.getElementById('estimateCard').style.display = 'none'; }
+  } else {
+    document.getElementById('goalProgress').textContent = 'Configure ton objectif ci-dessous';
+    document.getElementById('goalProgressBar').style.width = '0%';
+    document.getElementById('estimateCard').style.display = 'none';
+  }
+
+  // Inputs objectif
+  const gKg = document.getElementById('inputGoalKg');
+  const gW = document.getElementById('inputWaterGoal');
+  if (document.activeElement !== gKg) gKg.value = state.goal.kg || '';
+  if (document.activeElement !== gW) gW.value = state.goal.waterGoal || 8;
+
+  // Body
+  if (state.currentBody) renderBodyComp(state.currentBody);
+  renderWeightHistory();
+  renderHistory();
+}
+
+function renderWater() {
+  const goal = state.goal.waterGoal || 8;
+  const count = state.today.water || 0;
+  document.getElementById('waterCount').textContent = count;
+  document.getElementById('waterGoal').textContent = goal;
+  document.getElementById('waterMl').textContent = (count * 250) + ' ml';
+  document.getElementById('waterBar').style.width = Math.min(100, (count / goal) * 100) + '%';
+  const drops = document.getElementById('waterDrops');
+  drops.innerHTML = '';
+  for (let i = 0; i < Math.min(goal, 16); i++) {
+    const d = document.createElement('div');
+    d.className = 'water-drop' + (i < count ? ' filled' : '');
+    d.textContent = '💧';
+    d.onclick = () => { state.today.water = i < count ? i : i + 1; save(); renderWater(); if (navigator.vibrate) navigator.vibrate(30); };
+    drops.appendChild(d);
+  }
+}
+
+function renderBodyComp(b) {
+  document.getElementById('bodyCompResult').style.display = '';
+  const fatKg = (b.weight * b.bodyfat / 100).toFixed(1);
+  const leanKg = (b.weight - parseFloat(fatKg)).toFixed(1);
+  document.getElementById('bodyCompGrid').innerHTML = `
+    <div class="body-comp-item"><div class="body-comp-val" style="color:var(--accent)">${b.bodyfat}%</div><div class="body-comp-lbl">Bodyfat</div></div>
+    <div class="body-comp-item"><div class="body-comp-val" style="color:var(--green)">${b.muscle || '—'}%</div><div class="body-comp-lbl">Muscle</div></div>
+    <div class="body-comp-item"><div class="body-comp-val" style="color:var(--accent2)">${fatKg} kg</div><div class="body-comp-lbl">Masse grasse</div></div>
+    <div class="body-comp-item"><div class="body-comp-val" style="color:var(--blue)">${leanKg} kg</div><div class="body-comp-lbl">Masse maigre</div></div>
+  `;
+  // Remplir les inputs sans écraser si focus
+  ['bWeight','bBodyfat','bMuscle','bWater'].forEach(id => {
+    const el = document.getElementById(id);
+    if (document.activeElement !== el) {
+      const key = id.replace('b','').toLowerCase();
+      const map = { weight: b.weight, bodyfat: b.bodyfat, muscle: b.muscle||'', water: b.water||'' };
+      el.value = map[key] !== undefined ? map[key] : b[key.replace('b','')] || '';
+    }
+  });
+}
+
+function renderWeightHistory() {
+  const hist = state.bodyMeasurements.slice(0, 10);
+  const el = document.getElementById('weightHistory');
+  if (!hist.length) { el.innerHTML = '<div class="empty">Aucune mesure encore</div>'; return; }
+  el.innerHTML = hist.map((m, i) => {
+    const prev = hist[i + 1];
+    const delta = prev ? (m.weight - prev.weight).toFixed(1) : null;
+    const dc = delta < 0 ? 'var(--green)' : delta > 0 ? 'var(--accent)' : 'var(--muted)';
+    const ds = delta !== null ? `<span style="font-size:12px;font-weight:600;color:${dc}">${delta > 0 ? '+' : ''}${delta} kg</span>` : '';
+    return `<div class="weight-item">
+      <div style="font-size:11px;color:var(--muted2)">${m.date}</div>
+      <div style="text-align:right">
+        <div style="font-family:var(--display);font-size:20px">${m.weight} kg <span style="font-size:12px;color:var(--accent)">${m.bodyfat}%</span></div>
+        ${ds}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderHistory() {
+  const el = document.getElementById('historyList');
+  const countEl = document.getElementById('histCount');
+  if (!state.history.length) {
+    el.innerHTML = '<div class="empty">Aucune entrée encore — les jours passés apparaissent ici</div>';
+    countEl.textContent = ''; return;
+  }
+  countEl.textContent = `— ${state.history.length} jour${state.history.length > 1 ? 's' : ''}`;
+  el.innerHTML = state.history.map((d, i) => {
+    const def = d.burned ? d.burned - d.consumed : null;
+    const color = def !== null ? (def >= 0 ? 'var(--green)' : 'var(--accent)') : 'var(--muted)';
+    const sign = def !== null && def >= 0 ? '+' : '';
+    const kgStr = def !== null && def !== 0
+      ? `<div style="font-size:9px;color:var(--muted)">${def > 0 ? '' : '-'}${kcalToKg(Math.abs(def))} kg</div>`
+      : '';
+    return `<div class="hist-item" onclick="openEditModal(${i})">
+      <div class="hist-dot" style="background:${color}"></div>
+      <div style="flex:1">
+        <div style="font-size:11px;color:var(--muted2);display:flex;align-items:center;gap:5px">
+          ${d.date} <span class="edit-badge">✏️ modifier</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">${d.consumed || 0} mangé · ${d.burned || 0} brûlé · 💧${d.water || 0}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="hist-val" style="color:${color}">${def !== null ? sign + def.toLocaleString('fr-FR') : '—'}</div>
+        ${kgStr}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== MODAL =====
+function openEditModal(index) {
+  editingIndex = index;
+  const d = state.history[index];
+  document.getElementById('modalDate').textContent = d.date;
+  document.getElementById('modalConsumed').value = d.consumed || 0;
+  document.getElementById('modalBurned').value = d.burned || 0;
+  document.getElementById('calcModalConsumed').className = 'calc-bar';
+  document.getElementById('calcModalBurned').className = 'calc-bar';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('editModal').style.display = 'none';
+  editingIndex = -1;
+}
+
+function saveModal() {
+  if (editingIndex < 0) return;
+  state.history[editingIndex].consumed = getVal('modalConsumed');
+  state.history[editingIndex].burned = getVal('modalBurned');
+  save(); closeModal(); render();
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+// ===== ACTIONS =====
+function saveToday() {
+  state.today.consumed = getVal('inputConsumed');
+  state.today.burned = getVal('inputBurned');
+  state.today.date = todayKey();
+  // reset calc bars
+  document.getElementById('calcConsumed').className = 'calc-bar';
+  document.getElementById('calcBurned').className = 'calc-bar';
+  save(); render();
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function resetToday() {
+  if (!confirm('Réinitialiser le jour ?')) return;
+  state.today = { consumed: 0, burned: 0, water: 0, date: todayKey() };
+  document.getElementById('inputConsumed').value = '';
+  document.getElementById('inputBurned').value = '';
+  document.getElementById('calcConsumed').className = 'calc-bar';
+  document.getElementById('calcBurned').className = 'calc-bar';
+  save(); render();
+}
+
+function saveGoal() {
+  state.goal.kg = parseFloat(document.getElementById('inputGoalKg').value) || 0;
+  state.goal.waterGoal = parseInt(document.getElementById('inputWaterGoal').value) || 8;
+  save(); render();
+  if (navigator.vibrate) navigator.vibrate([40, 20, 40]);
+}
+
+function saveBodyComp() {
+  const w = parseFloat(document.getElementById('bWeight').value);
+  const bf = parseFloat(document.getElementById('bBodyfat').value);
+  if (!w || !bf) { alert('Entre au moins le poids et le % bodyfat'); return; }
+  const m = {
+    weight: w, bodyfat: bf,
+    muscle: parseFloat(document.getElementById('bMuscle').value) || null,
+    water: parseFloat(document.getElementById('bWater').value) || null,
+    date: todayKey()
+  };
+  state.currentBody = m;
+  if (!state.bodyMeasurements.length || state.bodyMeasurements[0].date !== todayKey()) {
+    state.bodyMeasurements.unshift(m);
+    if (state.bodyMeasurements.length > 30) state.bodyMeasurements = state.bodyMeasurements.slice(0, 30);
+  } else { state.bodyMeasurements[0] = m; }
+  save(); render();
+  if (navigator.vibrate) navigator.vibrate(50);
+}
+
+function calcBodyfatGoal() {
+  const target = parseFloat(document.getElementById('bTargetBf').value);
+  const body = state.currentBody;
+  if (!body) { alert('Entre tes données Withings d\'abord'); return; }
+  if (!target || target >= body.bodyfat) { alert('L\'objectif doit être inférieur à ton bodyfat actuel'); return; }
+  const currentFatKg = body.weight * body.bodyfat / 100;
+  const leanKg = body.weight - currentFatKg;
+  const targetWeight = leanKg / (1 - target / 100);
+  const fatToLose = body.weight - targetWeight;
+  const kcalDeficit = fatToLose * 7700;
+  document.getElementById('bfGoalResult').style.display = '';
+  document.getElementById('bfGoalContent').innerHTML = `
+    <div class="result-box orange">
+      <strong>Situation actuelle</strong><br>
+      Poids : ${body.weight} kg | Bodyfat : ${body.bodyfat}% → ${currentFatKg.toFixed(1)} kg de gras<br>
+      Masse maigre : ${leanKg.toFixed(1)} kg → <em style="color:var(--blue)">à préserver</em>
+    </div>
+    <div style="height:8px"></div>
+    <div class="result-box">
+      <strong>Objectif ${target}% bodyfat</strong><br>
+      Poids cible : <strong>${targetWeight.toFixed(1)} kg</strong><br>
+      Gras à perdre : <strong>${fatToLose.toFixed(2)} kg</strong><br>
+      Déficit total : <strong>${Math.round(kcalDeficit).toLocaleString('fr-FR')} kcal</strong>
+    </div>
+  `;
+  if (!state.goal.kg || confirm(`Définir ${fatToLose.toFixed(2)} kg comme objectif ?`)) {
+    state.goal.kg = parseFloat(fatToLose.toFixed(2));
+    save(); render();
+  }
+}
+
+// ===== TABS =====
+function switchTab(name) {
+  const names = ['today', 'body', 'goal', 'history'];
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', names[i] === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+}
+
+// ===== INIT =====
+load();
+render();
+setInterval(() => { if (state.today.date !== todayKey()) { load(); render(); } }, 30000);
+</script>
+</body>
+</html>
